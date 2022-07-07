@@ -32,3 +32,33 @@ COV_PR_2 = torch.eye(3)
 # the inverse of the covariance of the priors
 INV_COV_PR_1 = torch.linalg.inv(COV_PR_1)
 INV_COV_PR_2 = torch.linalg.inv(COV_PR_2)
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Configurations for the sinusoidal and quadratic model (non-nested case)
+N_NDATA = 200
+N_XMIN = 0.0
+N_XMAX = torch.pi
+N_SIGMA = 0.1
+
+# amplitude of the sinusoidal model
+AMP = 4.0
+
+# angular frequency
+ANG = 0.75
+
+# the set of parameters to use
+SIN_PARAMS = torch.tensor([AMP, ANG])
+
+# this is for calculating the log-likelihood on a grid of points
+AMP_MIN = 3.9
+AMP_MAX = 4.1
+ANG_MIN = 0.73
+ANG_MAX = 0.78
+
+A_MIN = -1.0
+A_MAX = -0.8
+B_MIN = 3.5
+B_MAX = 3.8
+
+# number of points on the grid
+NPOINTS = 200
