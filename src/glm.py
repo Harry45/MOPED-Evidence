@@ -99,9 +99,8 @@ def generate_design(xvalues: torch.Tensor, two: bool) -> torch.Tensor:
     return design
 
 
-def posterior(
-        design: torch.Tensor, precision_noise: torch.Tensor, precision_prior: torch.Tensor, yvals: torch.tensor,
-        mu_prior: torch.Tensor) -> torch.Tensor:
+def posterior(design: torch.Tensor, precision_noise: torch.Tensor,
+              precision_prior: torch.Tensor, yvals: torch.tensor, mu_prior: torch.Tensor) -> torch.Tensor:
     """Calculate the posterior of the model.
 
     Args:
@@ -116,7 +115,7 @@ def posterior(
     """
 
     # the posterior covariance matrix
-    covariance = torch.linalg.inv(precision_prior + design.t().matmul(precision_noise).matmul(design))
+    covariance = torch.linalg.inv(precision_prior + design.t() @ precision_noise @ design)
 
     # the mean of the posterior
     mean = design.t() @ precision_noise @ yvals + precision_prior @ mu_prior
@@ -142,11 +141,13 @@ def evidence(design: torch.Tensor, cov_noise: torch.Tensor, cov_prior: torch.Ten
     # print(design)
     # print(mu_prior)
     design = design.float()
+    cov_noise = cov_noise.float()
+    cov_prior = cov_prior.float()
 
     mean_data = design @ mu_prior
     cov_data = cov_noise + design @ cov_prior @ design.t()
-    pdf = torch.distributions.MultivariateNormal(mean_data, cov_data)
+    pdf = torch.distributions.MultivariateNormal(mean_data.float(), cov_data.float())
 
-    log_evidence = pdf.log_prob(yvals).item()
+    log_evidence = pdf.log_prob(yvals.float()).item()
 
     return log_evidence

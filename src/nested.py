@@ -7,18 +7,15 @@ Project: Frequentist properties of the Bayes Factor
 Code: Investigating non-nested models.
 """
 
-from dataclasses import dataclass
 import torch
 import numpy as np
 
 # our script and functions
+from src.glm import generate_design, evidence, posterior
 import config as CONFIG
-import utils.helpers as hp
-from src.glm import generate_data, generate_design, evidence, posterior
 
 
-@dataclass
-class BayesFactor(object):
+class BayesNested(object):
     """Calculates the Bayesian Evidence and Bayes Factor for Gaussian Linear
     Models. We are considering nested models in this case, that is,
     f(x) = ax^2 + bx + c
@@ -32,17 +29,19 @@ class BayesFactor(object):
         config file.
     """
 
-    # the noise level
-    sigma: float
+    def __init__(self, data: torch.Tensor):
 
-    # the number of data points
-    ndata: int = CONFIG.NDATA
+        self.data = data
+        # the number of data points
+        self.ndata = CONFIG.NDATA
 
-    def __post_init__(self):
+        self._postinit()
+
+    def _postinit(self):
 
         # the covariance matrix
-        self.cov = torch.from_numpy(np.diag([self.sigma ** 2] * self.ndata))
-        self.cov_inv = torch.from_numpy(np.diag([1 / self.sigma ** 2] * self.ndata))
+        self.cov = torch.from_numpy(np.diag([CONFIG.SIGMA ** 2] * self.ndata))
+        self.cov_inv = torch.from_numpy(np.diag([1 / CONFIG.SIGMA ** 2] * self.ndata))
 
         # the x values
         self.xvalues = torch.linspace(CONFIG.XMIN, CONFIG.XMAX, CONFIG.NDATA)
@@ -67,98 +66,76 @@ class BayesFactor(object):
         self.inv_cov_moped_1 = torch.linalg.inv(self.cov_moped_1)
         self.inv_cov_moped_2 = torch.linalg.inv(self.cov_moped_2)
 
-    def summaries(self, nrealisation: int = 5, verbose: bool = False, save: bool = False) -> dict:
-        """Calculate the posterior and evidence of the two models
+    def summaries(self, order=2) -> dict:
+        """Calculates the mean and covariance of the posterior distribution.
+        Also stores the evidence for the compressed and uncompressed data. The
+        model considered are:
 
-        Args:
-            nrealisation (int, optional): Number of realisations. Defaults to 5.
-            verbose (bool, optional): Option to display the main results on the terminal. Defaults to False.
-            save (bool, optional): Option to save the outputs. Defaults to False.
+        y = ax^2 + bx
 
-        Returns:
-            dict: the summaries of the two models
+        and
+
+        y = ax^2 + bx + c
         """
 
+        assert order in [2, 3], 'Should be either 2 or 3'
+
         dictionary = {}
+        dictionary_moped = {}
+        record = {}
+        if order == 2:
+            record['design'] = self.phi_1
+            record['cov_prior'] = CONFIG.COV_PR_1.float()
+            record['inv_cov_prior'] = CONFIG.INV_COV_PR_1.float()
+            record['mean_prior'] = CONFIG.MU_PR_1
+            record['moped_vectors'] = self.moped_vectors_1
+            record['B_Phi'] = self.b_phi_1
+            record['cov_moped'] = self.cov_moped_1
+            record['inv_cov_moped'] = self.inv_cov_moped_1
 
-        for i in range(nrealisation):
-            _, yvals = generate_data([CONFIG.THETA_0, CONFIG.THETA_1], self.sigma, True)
+        else:
+            record['design'] = self.phi_2
+            record['cov_prior'] = CONFIG.COV_PR_2.float()
+            record['inv_cov_prior'] = CONFIG.INV_COV_PR_2.float()
+            record['mean_prior'] = CONFIG.MU_PR_2
+            record['moped_vectors'] = self.moped_vectors_2
+            record['B_Phi'] = self.b_phi_2
+            record['cov_moped'] = self.cov_moped_2
+            record['inv_cov_moped'] = self.inv_cov_moped_2
 
-            # arguments for the posterior
-            args1 = (self.phi_1, self.cov_inv, CONFIG.INV_COV_PR_1, yvals, CONFIG.MU_PR_1)
-            args2 = (self.phi_2, self.cov_inv, CONFIG.INV_COV_PR_2, yvals, CONFIG.MU_PR_2)
+        # posterior distribution for the uncompressed data
+        args = (record['design'], self.cov_inv, record['inv_cov_prior'], self.data, record['mean_prior'])
+        mean, cov = posterior(*args)
 
-            # mean and covariance for the uncompressed data
-            mu1, cov1 = posterior(*args1)
-            mu2, cov2 = posterior(*args2)
+        # evidence for uncompressed data
+        args_evi = (record['design'], self.cov, record['cov_prior'], self.data, record['mean_prior'])
+        evi = evidence(*args_evi)
 
-            # arguments for the evidence calculation
-            args_e1 = (self.phi_1, self.cov, CONFIG.COV_PR_1, yvals, CONFIG.MU_PR_1)
-            args_e2 = (self.phi_2, self.cov, CONFIG.COV_PR_2, yvals, CONFIG.MU_PR_2)
+        dictionary['mean'] = mean
+        dictionary['cov'] = cov
+        dictionary['evi'] = evi
 
-            # evidence for the uncompressed data
-            evi1 = evidence(*args_e1)
-            evi2 = evidence(*args_e2)
+        # calculate the compressed data
+        moped_data = record['moped_vectors'].t() @ self.data
 
-            # MOPED
-            moped_data_1 = self.moped_vectors_1.t() @ yvals
-            moped_data_2 = self.moped_vectors_2.t() @ yvals
+        # posterior distribution for the compressed data
+        args_moped = (
+            record['B_Phi'],
+            record['inv_cov_moped'],
+            record['inv_cov_prior'],
+            moped_data, record['mean_prior'])
+        mu_moped, cov_moped = posterior(*args_moped)
 
-            args_m1 = (self.b_phi_1, self.inv_cov_moped_1, CONFIG.INV_COV_PR_1, moped_data_1, CONFIG.MU_PR_1)
-            args_m2 = (self.b_phi_2, self.inv_cov_moped_2, CONFIG.INV_COV_PR_2, moped_data_2, CONFIG.MU_PR_2)
+        # evidence for the compressed data
+        args_evi_moped = (
+            record['B_Phi'],
+            record['cov_moped'],
+            record['inv_cov_moped'],
+            moped_data, record['mean_prior'])
+        evi_moped = evidence(*args_evi_moped)
 
-            # mean and covariance for the compressed data
-            mu_moped_1, cov_moped_1 = posterior(*args_m1)
-            mu_moped_2, cov_moped_2 = posterior(*args_m2)
+        dictionary_moped['mean_moped'] = mu_moped
+        dictionary_moped['cov_moped'] = cov_moped
+        dictionary_moped['evi_moped'] = evi_moped
 
-            # arguments for the evidence calculation for the compressed data
-            args_em1 = (self.b_phi_1, self.cov_moped_1, CONFIG.INV_COV_PR_1, moped_data_1, CONFIG.MU_PR_1)
-            args_em2 = (self.b_phi_2, self.cov_moped_2, CONFIG.INV_COV_PR_2, moped_data_2, CONFIG.MU_PR_2)
-
-            # evidence for the compressed data
-            evi_moped_1 = evidence(*args_em1)
-            evi_moped_2 = evidence(*args_em2)
-
-            # record important quantities
-            rec_1 = {}
-            rec_2 = {}
-
-            rec_1['mu'] = mu1.numpy()
-            rec_1['cov'] = cov1.numpy()
-            rec_1['evi'] = evi1
-            rec_1['evi_moped'] = evi_moped_1
-
-            rec_2['mu'] = mu2.numpy()
-            rec_2['cov'] = cov2.numpy()
-            rec_2['evi'] = evi2
-            rec_2['evi_moped'] = evi_moped_2
-
-            bf_12 = evi1 - evi2
-            bf_moped_12 = evi_moped_1 - evi_moped_2
-
-            dictionary[i] = {'model_1': rec_1, 'model_2': rec_2, 'bf_12': bf_12, 'bf_moped_12': bf_moped_12}
-
-            if save:
-                hp.save_pickle(dictionary, 'results', 'nested')
-
-            if verbose:
-
-                print(mu1)
-                print(mu_moped_1)
-                print(torch.diag(cov1))
-                print(torch.diag(cov_moped_1))
-
-                print(mu2)
-                print(mu_moped_2)
-                print(torch.diag(cov2))
-                print(torch.diag(cov_moped_2))
-
-                print(f'Evidence for Model 1 (Uncompressed): {evi1:.3f}')
-                print(f'Evidence for Model 2 (Uncompressed): {evi2:.3f}')
-                print(f'The log-BF (Uncompressed) between Model 1 and Model 2 is: {bf_12:.3f}')
-                print(f'Evidence for Model 1 (Compressed): {evi_moped_1:.3f}')
-                print(f'Evidence for Model 2 (Compressed): {evi_moped_2:.3f}')
-                print(f'The log-BF(Compressed) between Model 1 and Model 2 is: {bf_moped_12:.3f}')
-                print('-' * 10)
-
-        return dictionary
+        return dictionary, dictionary_moped
