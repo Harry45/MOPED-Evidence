@@ -113,7 +113,7 @@ class BayesNonNested:
 
         # arguments for the evidence calculation for the compressed data
         args_evi_moped_quad = (self.b_phi_quad, self.cov_moped_quad,
-                               CONFIG.INV_COV_PR_1, moped_data_quad, CONFIG.MU_PR_1)
+                               CONFIG.COV_PR_1, moped_data_quad, CONFIG.MU_PR_1)
 
         # evidence for the compressed data
         evi_moped_quad = evidence(*args_evi_moped_quad)
@@ -153,6 +153,15 @@ class BayesNonNested:
         return np.exp(logl + logp)
 
     def logpost_sin_moped(self, amp: float, ang: float) -> np.ndarray:
+        """Calculates the log posterior when using the sinusoidal model and MOPED.
+
+        Args:
+            amp (float): the amplitude of the suinusoidal model.
+            ang (float): the angular frequency of the sinusoidal model.
+
+        Returns:
+            np.ndarray: the log-posterior value
+        """
 
         # the parameters in a tensor
         param = torch.tensor([amp, ang])

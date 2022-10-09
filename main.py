@@ -77,4 +77,4 @@ def main(nrealisations: int, nested: bool):
 
 
 if __name__ == '__main__':
-    main(nrealisations=1000, nested=False)
+    main(nrealisations=10, nested=False)

@@ -15,7 +15,7 @@ from src.glm import generate_design, evidence, posterior
 import config as CONFIG
 
 
-class BayesNested(object):
+class BayesNested:
     """Calculates the Bayesian Evidence and Bayes Factor for Gaussian Linear
     Models. We are considering nested models in this case, that is,
     f(x) = ax^2 + bx + c
@@ -130,7 +130,7 @@ class BayesNested(object):
         args_evi_moped = (
             record['B_Phi'],
             record['cov_moped'],
-            record['inv_cov_moped'],
+            record['cov_prior'],
             moped_data, record['mean_prior'])
         evi_moped = evidence(*args_evi_moped)
 

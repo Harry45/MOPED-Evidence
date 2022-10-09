@@ -14,7 +14,7 @@ XMIN = 0.0
 XMAX = torch.pi
 
 # number of data points to generate
-NDATA = 100
+NDATA = 20
 
 # the noise level
 SIGMA = 0.2
@@ -49,15 +49,15 @@ ANG = 0.75
 SIN_PARAMS = torch.tensor([AMP, ANG])
 
 # this is for calculating the log-likelihood on a grid of points
-AMP_MIN = 3.9
-AMP_MAX = 4.1
-ANG_MIN = 0.73
-ANG_MAX = 0.78
+AMP_MIN = 3.80
+AMP_MAX = 4.20
+ANG_MIN = 0.65
+ANG_MAX = 0.85
 
-A_MIN = -1.0
-A_MAX = -0.8
-B_MIN = 3.5
-B_MAX = 3.8
+A_MIN = -1.20
+A_MAX = -0.60
+B_MIN = 3.00
+B_MAX = 4.50
 
 # number of points on the grid
 NPOINTS = 200
