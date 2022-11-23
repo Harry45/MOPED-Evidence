@@ -15,6 +15,9 @@ def first_model(parameters: torch.Tensor, xvalues: torch.Tensor) -> torch.Tensor
 
     mu = a * x**2 + a * x
 
+    The data is generated from the second model. Therefore, we will edit this function if we want to
+    test a new model, for example, a sinusoidal function.
+
     Args:
         parameters (torch.Tensor): the set of parameters.
         xvalues (torch.Tensor): the values of x where we want to evaluate the theory.

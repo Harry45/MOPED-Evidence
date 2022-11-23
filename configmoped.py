@@ -27,11 +27,18 @@ def get_config() -> ConfigDict:
     path.logs = 'logs/'
 
     # for the main algorithm
-    config.fid = torch.tensor([-1.0, 4.0, 0.0])
-    config.sigma = 0.2
+    config.fid1 = torch.tensor([-1.0, 4.0])
+    config.fid2 = torch.tensor([-1.0, 4.0, 0.0])
+    config.p_data = torch.tensor([-0.90, 3.90, 0.05])  # the parameters used to generate the data
+
+    # the domain
     config.xmin = 0.0
     config.xmax = torch.pi
     config.ndata = 20
+    config.xgrid = torch.linspace(config.xmin, config.xmax, config.ndata)
+
+    # the noise covariance
+    config.sigma = 0.2
     config.noiseCov = config.sigma ** 2 * torch.eye(config.ndata)
     config.invNoiseCov = (1.0 / config.sigma**2) * torch.eye(config.ndata)
 
@@ -41,5 +48,7 @@ def get_config() -> ConfigDict:
     priors.mu2 = torch.tensor([-1.0, 4.0, 0.0])  # same as fiducial point
     priors.cov1 = torch.eye(2)
     priors.cov2 = torch.eye(3)
+    priors.precision1 = torch.linalg.inv(priors.cov1)
+    priors.precision2 = torch.linalg.inv(priors.cov2)
 
     return config
