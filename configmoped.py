@@ -34,18 +34,16 @@ def get_config() -> ConfigDict:
     # the domain
     config.xmin = 0.0
     config.xmax = torch.pi
-    config.ndata = 20
+    config.ndata = 50
     config.xgrid = torch.linspace(config.xmin, config.xmax, config.ndata)
 
     # the noise covariance
-    config.sigma = 0.2
+    config.sigma = 0.02
     config.noiseCov = config.sigma ** 2 * torch.eye(config.ndata)
     config.invNoiseCov = (1.0 / config.sigma**2) * torch.eye(config.ndata)
 
-    # priors
+    # priors (centred on the fiducial points)
     config.priors = priors = ConfigDict()
-    priors.mu1 = torch.tensor([-1.0, 4.0])
-    priors.mu2 = torch.tensor([-1.0, 4.0, 0.0])  # same as fiducial point
     priors.cov1 = torch.eye(2)
     priors.cov2 = torch.eye(3)
     priors.precision1 = torch.linalg.inv(priors.cov1)

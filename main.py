@@ -10,7 +10,7 @@ from absl import flags, app
 from ml_collections.config_flags import config_flags
 
 # our scripts
-from utils.helpers import makedirs
+from utils.helpers import makedirs, load_pickle
 from utils.logger import get_logger
 from src.data import generate_data, compression
 from src.data import calculate_difference, calculate_fiducial
@@ -30,10 +30,15 @@ def main(args):
     logger = get_logger(FLAGS.config, 'main')
     logger.info("Running main script")
 
+    # data = generate_data(FLAGS.config)
+    # model_fid = calculate_fiducial(FLAGS.config, save=True)
+    # diff = calculate_difference(data, model_fid, save=True)
+    # dictionary = compression(FLAGS.config, save=True)
+
+    model_fid = load_pickle('data', 'model_fiducial')
+    dictionary = load_pickle('data', 'compression')
     data = generate_data(FLAGS.config)
-    model_fid = calculate_fiducial(FLAGS.config, save=False)
     diff = calculate_difference(data, model_fid, save=False)
-    dictionary = compression(FLAGS.config, save=False)
     evidence_uncompressed(FLAGS.config, diff, dictionary)
 
 

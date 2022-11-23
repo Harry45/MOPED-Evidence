@@ -45,7 +45,7 @@ def second_model(parameters: torch.Tensor, xvalues: torch.Tensor) -> torch.Tenso
     return yvalues
 
 
-def grad_first_model(parameters: torch.Tensor, xvalues: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+def grad_first_model(parameters: torch.Tensor, xvalues: torch.Tensor) -> torch.Tensor:
     """Evaluates the first model and its first derivative with respect to the parameters.
 
     Args:
@@ -53,26 +53,21 @@ def grad_first_model(parameters: torch.Tensor, xvalues: torch.Tensor) -> Tuple[t
         xvalues (torch.Tensor): the domain values of x where we want to evaluate the model.
 
     Returns:
-        Tuple[torch.Tensor, torch.Tensor]: the model at that parameter and the first derivative
+        torch.Tensor: the model at that parameter and the first derivative
     """
     parameters.requires_grad = True
-
-    mean = list()
     grad = list()
 
     for xval in xvalues:
         model = first_model(parameters, xval)
         gradient = torch.autograd.grad(model, parameters)[0]
-        mean.append(model)
         grad.append(gradient)
-
-    mean = torch.FloatTensor(mean)
     grad = torch.vstack(grad)
     parameters.requires_grad = False
-    return mean, grad
+    return grad
 
 
-def grad_second_model(parameters: torch.Tensor, xvalues: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+def grad_second_model(parameters: torch.Tensor, xvalues: torch.Tensor) -> torch.Tensor:
     """Evaluates the second model and its first derivative with respect to the parameters.
 
     Args:
@@ -80,20 +75,15 @@ def grad_second_model(parameters: torch.Tensor, xvalues: torch.Tensor) -> Tuple[
         xvalues (torch.Tensor): the domain values of x where we want to evaluate the model.
 
     Returns:
-        Tuple[torch.Tensor, torch.Tensor]: the model at that parameter and the first derivative
+        torch.Tensor: the model at that parameter and the first derivative
     """
     parameters.requires_grad = True
-
-    mean = list()
     grad = list()
 
     for xval in xvalues:
         model = second_model(parameters, xval)
         gradient = torch.autograd.grad(model, parameters)[0]
-        mean.append(model)
         grad.append(gradient)
-
-    mean = torch.FloatTensor(mean)
     grad = torch.vstack(grad)
     parameters.requires_grad = False
-    return mean, grad
+    return grad

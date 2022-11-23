@@ -85,8 +85,8 @@ def compression(config: ConfigDict, save: bool) -> dict:
     dictionary = dict()
     diff = load_pickle('data', 'difference')
 
-    _, dictionary['grad1'] = grad_first_model(config.fid1, config.xgrid)
-    _, dictionary['grad2'] = grad_second_model(config.fid2, config.xgrid)
+    dictionary['grad1'] = grad_first_model(config.fid1, config.xgrid)
+    dictionary['grad2'] = grad_second_model(config.fid2, config.xgrid)
 
     dictionary['moped_vec_1'] = config.invNoiseCov @ dictionary['grad1']
     dictionary['moped_vec_2'] = config.invNoiseCov @ dictionary['grad2']
