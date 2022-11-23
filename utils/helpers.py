@@ -15,6 +15,7 @@ from typing import NewType
 import torch
 import numpy as np
 import pandas as pd
+from ml_collections.config_dict import ConfigDict
 
 TorchTensor = NewType('TorchTensor', classmethod)
 
@@ -256,3 +257,13 @@ def load_pickle(folder_name: str, file_name: str) -> object:
         obj = pickle.load(file)
 
     return obj
+
+
+def makedirs(config: ConfigDict):
+    """Safely create all directories.
+
+    Args:
+        config (ConfigDict): configuration file with a branch called path.
+    """
+    for path in config.path.values():
+        os.makedirs(path, exist_ok=True)
