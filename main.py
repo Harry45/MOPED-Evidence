@@ -14,7 +14,7 @@ from utils.helpers import makedirs, load_pickle
 from utils.logger import get_logger
 from src.data import generate_data, compression
 from src.data import calculate_difference, calculate_fiducial
-from src.bayes import evidence_uncompressed
+from src.bayes import evidence_uncompressed, evidence_compressed
 
 
 FLAGS = flags.FLAGS
@@ -40,6 +40,7 @@ def main(args):
     data = generate_data(FLAGS.config)
     diff = calculate_difference(data, model_fid, save=False)
     evidence_uncompressed(FLAGS.config, diff, dictionary)
+    evidence_compressed(FLAGS.config, diff, dictionary)
 
 
 if __name__ == "__main__":

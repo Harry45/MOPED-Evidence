@@ -44,8 +44,8 @@ def get_config() -> ConfigDict:
 
     # priors (centred on the fiducial points)
     config.priors = priors = ConfigDict()
-    priors.cov1 = torch.eye(2)
-    priors.cov2 = torch.eye(3)
+    priors.cov1 = torch.eye(len(config.fid1))
+    priors.cov2 = torch.eye(len(config.fid2))
     priors.precision1 = torch.linalg.inv(priors.cov1)
     priors.precision2 = torch.linalg.inv(priors.cov2)
 
