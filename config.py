@@ -8,6 +8,7 @@ Script: Configuration file for running the code
 
 import torch
 from ml_collections.config_dict import ConfigDict
+torch.set_default_dtype(torch.float64)
 
 
 def get_config(experiment: str) -> ConfigDict:

@@ -39,7 +39,7 @@ class FirstModel:
         Returns:
             torch.Tensor: the function evaluated at that set of parameters
         """
-        target = parameters[0] * parameters[1] * torch.sin(domain)
+        target = parameters[0] + parameters[1] * torch.sin(domain)
         return target
 
     @staticmethod
