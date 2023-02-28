@@ -27,6 +27,7 @@ class FirstModel:
         self.fid_params = fid_params
         self.fid_model = self.function(fid_params, domain)
         self.fid_grad = self.gradient(fid_params, domain)
+        print('Model 1: E + sin(Ft)')
 
     @staticmethod
     def function(parameters: torch.Tensor, domain: torch.Tensor) -> torch.Tensor:
@@ -85,6 +86,7 @@ class SecondModel:
         self.fid_params = fid_params
         self.fid_model = self.function(fid_params, domain)
         self.fid_grad = self.gradient(fid_params, domain)
+        print('Model 2: at^2 + bt')
 
     @staticmethod
     def function(parameters: torch.Tensor, domain: torch.Tensor) -> torch.Tensor:
