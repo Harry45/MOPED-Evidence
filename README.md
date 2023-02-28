@@ -1,4 +1,4 @@
-# Frequentist Properties of Bayes Factor
+# Model Comparison and Extreme Data Compression
 
 Calculation of the marginal likelihood with data compression. While the value of the marginal likelihood changes under data compression, the value of the Bayes Factor doesn't. This is the main summary of this work.
 
